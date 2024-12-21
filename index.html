@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" type="text/css" href="canvas.css">
+		<title>Horloge</title>
+		<meta name="Author" content="Luc DE MEY" lang="fr">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="Robots" content="index,follow">
+		<script src="canvas.js"></script>
+
+
+<script> // Horloge
+	let cx, cy;				// Centre de l'horloge
+	let heure, minute, seconde,ms;
+	let rSec, rMin, rHr; 	// Longueurs des aiguilles
+	let redim = false;		// true = demande de redimensionnement du canvas
+	let parSeconde = true;
+
+
+	/* dessinAiguille( a, r, r0, e)
+	 * Aiguille de forme "cerf-volant" 
+	 * a = angle d'orientation, r = longueur de l'aiguille
+	 * r0 = distance à l'arrière, e = epaisseur
+	 */
+	function dessinAiguille( a, r, r0, e )
+	{
+		ctx.beginPath();
+
+		ctx.shadowOffsetX = 5;		// Décalage de l'ombre
+		ctx.shadowOffsetY = 5;
+		ctx.shadowBlur = 9;			// Netteté de l'ombre
+		ctx.shadowColor = '#333';	// Couleur de l'ombre
+
+		ctx.arc( cx, cy,  e/1.5,  0, _360);
+		ctx.moveTo( cx+Math.cos(a+_180)*r0, cy+Math.sin(a+_180)*r0);
+		ctx.lineTo( cx+Math.cos(a+_90)*e  , cy+Math.sin(a+_90)*e);
+		ctx.lineTo( cx+Math.cos(a)*r      , cy+Math.sin(a)*r );
+		ctx.lineTo( cx+Math.cos(a-_90)*e  , cy+Math.sin(a-_90)*e);
+		ctx.closePath();
+		ctx.fill();
+		ctx.arc( cx, cy,  e/1.5,  0, _360);
+		//ctx.beginPath();
+		ctx.moveTo( cx+Math.cos(a+_180)*r0, cy+Math.sin(a+_180)*r0);
+		ctx.lineTo( cx+Math.cos(a)*r      , cy+Math.sin(a)*r );
+		ctx.stroke();
+	}
+
+	function draw() 
+	{
+		let width = window.innerWidth;
+		let height = window.innerHeight;
+		if ( redim == true || width != cnv.width || height != cnv.height) {
+			_resizeCanvas( width-3, height-3 );
+  		}
+		let r = Math.min(width, height) / 2;
+
+		let h = _map( heure + _norm(minute, 0, 60), 0, 24, 0, 2*Math.PI * 2) - Math.PI/2;
+		let m = _map( minute + _norm(seconde, 0, 60), 0, 60, 0, 2*Math.PI) - Math.PI/2;
+		//let s = _map( seconde, 0, 60, 0, 2*Math.PI) - Math.PI/2;
+		let s;
+		if ( parSeconde)		// Avancement de la troteuse par pas de 1 seonde
+			s = _map( seconde, 0, 60, 0, 2*Math.PI) - Math.PI/2;
+		else					// Avancement continu de la troteurse
+			s = _map( seconde+ _norm(ms, 0, 1000), 0, 60, 0, 2*Math.PI) - Math.PI/2;
+
+		console.debug(`${heure}:${minute}:${seconde}`);
+
+
+		cx = cnv.width/2;	// Centre de l'écran
+		cy = cnv.height/2;
+
+		ctx.beginPath();	// Dessin du contour et du fond de l'horloge
+		
+		ctx.shadowOffsetX = 5;		// Décalage de l'ombre
+		ctx.shadowOffsetY = 5;
+		ctx.shadowBlur = 8;			// Netteté de l'ombre
+		ctx.shadowColor = 'grey';	// Couleur de l'ombre
+		
+		ctx.strokeStyle = "#996600";
+		ctx.fillStyle = "#FFE";
+		ctx.arc( cx, cy, r*0.9,  0, _360);
+		ctx.fill();
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.arc( cx, cy, r*0.89,  0, _360);
+		ctx.fill();
+		ctx.stroke();
+		
+		ctx.shadowOffsetX = 0;		// Décalage de l'ombre
+		ctx.shadowOffsetY = 0;
+		ctx.shadowBlur = 0;	
+		ctx.shadowColor = "#00000000";
+
+		// Dessin des graduations
+		ctx.beginPath();
+		ctx.strokeStyle = "#333333";
+		// ctx.lineWidth = 1;		// Graduations des minutes
+		ctx.lineWidth = r/800;
+		var x0, x1, y0, y1;
+
+		for (let a = 0; a < 390 ; a += 6) {  // 60 minutes
+			let angle = a*Math.PI/180;		// en radians
+			let l = r*0.85;
+			x0 = cx + Math.cos(angle)*l;
+			y0 = cy + Math.sin(angle)*l;
+			l = r*0.81;
+			x1 = cx + Math.cos(angle)*l;
+			y1 = cy + Math.sin(angle)*l;
+			ctx.moveTo(x0,y0); 
+			ctx.lineTo(x1,y1);
+			ctx.lineTo(x0,y0);
+			ctx.stroke();
+		} 
+		ctx.beginPath();
+		ctx.lineWidth = r/50;
+		for (let a = 0; a < 360; a += 30) {  // 12 h
+			let angle = a*Math.PI/180;
+			let l = r*0.85;
+			x0 = cx + Math.cos(angle)*l;
+			y0 = cy + Math.sin(angle)*l;
+			l = r*0.80;
+			x1 = cx + Math.cos(angle)*l;
+			y1 = cy + Math.sin(angle)*l;
+			ctx.moveTo(x0,y0); 
+			ctx.lineTo(x1,y1);
+			ctx.stroke();
+		}
+
+		// Dessin des aiguilles
+		ctx.strokeStyle = "#555";	// Aiguille des heures
+		ctx.fillStyle = "#333"
+		ctx.lineWidth = 1;
+		dessinAiguille(h, r*0.6, r*0.04, r*0.033);
+
+		ctx.strokeStyle = "#666";	// Aiguille des minutes
+		ctx.fillStyle = "#444"		
+		dessinAiguille(m, r*0.75, r*0.04, r*0.03);
+
+		ctx.strokeStyle = "#c00";	// Aiguille des secondes
+		ctx.lineWidth = r/90;  // 3
+		ctx.beginPath();
+		ctx.arc( cx, cy,  r*0.01,  0, _360);	
+		l = r*0.6;
+		ctx.moveTo( cx-Math.cos(s)*r*0.04, cy-Math.sin(s)*r*0.04);
+		ctx.lineTo( cx+Math.cos(s)*l, cy+Math.sin(s)*l);
+		ctx.stroke();
+
+		ctx.strokeStyle = "#f00";
+		ctx.lineWidth = r/250;  //1
+		ctx.beginPath();
+		ctx.arc( cx, cy,  r*0.018,  0, _360);	
+		ctx.moveTo( cx, cy);
+		l = r*0.8;
+		ctx.lineTo( cx + Math.cos(s)*l, cy + Math.sin(s)*l);
+		ctx.stroke();
+	}
+
+	function tictac() {
+		let currentTime = new Date();
+		let memo = seconde;
+		heure = currentTime.getHours();
+		minute = currentTime.getMinutes();
+		seconde = currentTime.getSeconds();
+		ms = currentTime.getMilliseconds();
+
+		if ( parSeconde && seconde != memo) 
+			draw();		// Seconde par seconde
+		else
+			draw();		// Avancement progressif
+	}
+</script>
+
+	</head>
+
+	<body>
+		<canvas id="canvas1">! Votre navigateur ne supporte pas l'élément Canvas</canvas>
+        <!--- Voir : https://www.w3schools.com/tags/ref_canvas.asp -->
+
+		<script>
+			// créer le canvas cnv et le context ctx
+            _createCanvas( window.innerWidth-3, window.innerHeight-3 );
+            cnv.style.background = "#FFFFFF";  // Variation de la couleur de fond du canvas
+            debugDim();
+
+			draw();
+			setInterval( tictac, parSeconde ? 200 : 20);
+		</script>
+
+	</body>
+
+</html>
