@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <link rel="stylesheet" type="text/css" href="canvas.css">
-		<title>Horloge</title>
-		<meta name="Author" content="Luc DE MEY" lang="fr">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta name="Robots" content="index,follow">
-		<script src="canvas.js"></script>
+	<title>Horloge</title>
+	<meta name="Author" content="Luc DE MEY" lang="fr">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Robots" content="index,follow">
+	<script src="canvas.js"></script>
 
 
 <script> // Horloge
-	let cx, cy;				// Centre de l'horloge
+	let cx, cy;		// Centre de l'horloge
 	let heure, minute, seconde,ms;
 	let rSec, rMin, rHr; 	// Longueurs des aiguilles
-	let redim = false;		// true = demande de redimensionnement du canvas
+	let redim = false;	// true = demande de redimensionnement du canvas
 	let parSeconde = true;
 
 
@@ -29,7 +29,7 @@
 
 		ctx.shadowOffsetX = 5;		// Décalage de l'ombre
 		ctx.shadowOffsetY = 5;
-		ctx.shadowBlur = 9;			// Netteté de l'ombre
+		ctx.shadowBlur = 9;		// Netteté de l'ombre
 		ctx.shadowColor = '#333';	// Couleur de l'ombre
 
 		ctx.arc( cx, cy,  e/1.5,  0, _360);
@@ -61,11 +61,10 @@
 		let s;
 		if ( parSeconde)		// Avancement de la troteuse par pas de 1 seonde
 			s = _map( seconde, 0, 60, 0, 2*Math.PI) - Math.PI/2;
-		else					// Avancement continu de la troteurse
+		else				// Avancement continu de la troteurse
 			s = _map( seconde+ _norm(ms, 0, 1000), 0, 60, 0, 2*Math.PI) - Math.PI/2;
 
 		console.debug(`${heure}:${minute}:${seconde}`);
-
 
 		cx = cnv.width/2;	// Centre de l'écran
 		cy = cnv.height/2;
@@ -74,7 +73,7 @@
 		
 		ctx.shadowOffsetX = 5;		// Décalage de l'ombre
 		ctx.shadowOffsetY = 5;
-		ctx.shadowBlur = 8;			// Netteté de l'ombre
+		ctx.shadowBlur = 8;		// Netteté de l'ombre
 		ctx.shadowColor = 'grey';	// Couleur de l'ombre
 		
 		ctx.strokeStyle = "#996600";
@@ -100,8 +99,8 @@
 		ctx.lineWidth = r/800;
 		var x0, x1, y0, y1;
 
-		for (let a = 0; a < 390 ; a += 6) {  // 60 minutes
-			let angle = a*Math.PI/180;		// en radians
+		for (let a = 0; a < 390 ; a += 6) {  	// 60 minutes
+			let angle = a*Math.PI/180;	// en radians
 			let l = r*0.85;
 			x0 = cx + Math.cos(angle)*l;
 			y0 = cy + Math.sin(angle)*l;
@@ -180,14 +179,11 @@
 
 		<script>
 			// créer le canvas cnv et le context ctx
-            _createCanvas( window.innerWidth-3, window.innerHeight-3 );
-            cnv.style.background = "#FFFFFF";  // Variation de la couleur de fond du canvas
-            debugDim();
-
+            		_createCanvas( window.innerWidth-3, window.innerHeight-3 );
+           		 cnv.style.background = "#FFFFFF";  // Variation de la couleur de fond du canvas
+            		debugDim();
 			draw();
 			setInterval( tictac, parSeconde ? 200 : 20);
 		</script>
-
 	</body>
-
 </html>
